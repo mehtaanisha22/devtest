@@ -8,7 +8,7 @@
         $routeProvider
           .when('/', {
             templateUrl: '/partials/notes-view.html',
-            controller: 'notesController'
+            controller: 'notesController',
           })
           .when('/login', {
              templateUrl: '/partials/login.html',
@@ -34,64 +34,197 @@
   }]);
 
 
-  app.service('AuthService', function($http){
-        var loggedUser = null;
+  app.service('AuthService', function($http, $location, LocalStorageService){
+        let loggedUser = null;
 
-        function login (username, password){
-            return $http.post("api/login", {username: username, password: password}).then(function(user){
-                loggedUser = user;
-            }, function(error){
+        async function login(username, password){
+            try {
+                const res = await $http.post("api/login", {username, password});
+                loggedUser = res.data.user;
+                LocalStorageService.setItem('user', loggedUser);
+                return loggedUser;
+            } catch(error) {
                 loggedUser = null;
-            })
+                LocalStorageService.clearItem('user');
+                throw error;
+            }
         }
 
         function isLoggedIn(){
-            return loggedUser != null;
+            const user = LocalStorageService.getItem('user');
+            loggedUser = user;
+            return !!user;
         }
+
+        function getUser(){
+            return loggedUser;
+        }
+
+        function logout(){
+            loggedUser = null;
+            LocalStorageService.clearItem('user');
+            $location.path('/login');
+        }
+
         return {
-            login : login,
-            isLoggedIn: isLoggedIn
+            login,
+            isLoggedIn,
+            getUser,
+            logout
         }
   });
+
+  app.service('LocalStorageService', function(){
+
+    function setItem(key, val){
+        localStorage.setItem(key, JSON.stringify(val));
+    }
+
+    function getItem(key){
+        return JSON.parse(localStorage.getItem(key));
+    }
+
+    function clearItem(key){
+        localStorage.clear(key);
+    }
+
+    return {
+        setItem,
+        getItem,
+        clearItem
+    }
+});
 
   app.controller('loginController', function($scope, AuthService, $location){
 
     $scope.invalidCreds = false;
     $scope.login = {
-        username : null,
-        password : null
+        username : '',
+        password : ''
     };
 
-    $scope.login = function(){
+    $scope.login = function(e){
+        e.preventDefault();
+        $scope.invalidCreds = false;
+        
         AuthService.login($scope.login.username, $scope.login.password).then(function(user){
-            console.log(user);
             $location.path("/");
         }, function(error){
-            console.log(error);
             $scope.invalidCreds = true;
         });
     };
   });
 
 
-  app.controller('notesController', function($scope){
+  app.service('NoteService', function($http){
+    async function getNotesByUserId (id){
+        try {
+            const res = await $http.get(`notes/user/${id}`);
+            const notes = res.data
+            return notes.reverse();
+        } catch(error) {
+            throw error;
+        }
+    }
 
+    async function updateNote(note){
+        try {
+            const res = await $http.put(`notes`, note);
+            const notes = res.data
+            return notes;
+        } catch(error) {
+        }
+    }
+
+    async function createNote(userId, note){
+        try {
+            const res = await $http.post(`notes`, {...note, userId});
+            const notes = res.data
+            return notes;
+        } catch(error) {
+            throw error;
+        }
+    }
+
+    return {
+        getNotesByUserId,
+        updateNote,
+        createNote
+    }
+});
+
+  app.controller('notesController', function($scope, AuthService, NoteService, $location){
+    $scope.notes = [];
+    $scope.isFetching = true;
     $scope.isEditCreateView = false;
+    $scope.selectedNote = null;
+    $scope.isNoteUpdating = false;
 
-    $scope.newNoteView = function(){
+    const user = AuthService.getUser();
+    
+    getNotes = function() {
+        $scope.isFetching = true;
+        NoteService.getNotesByUserId(user.id).then((notes) => {
+            $scope.notes = notes;
+            $scope.isFetching = false;
+            $scope.$apply();
+        }).catch(err => {
+            $scope.isFetching = false;
+            $scope.notes = [];
+            $scope.$apply();
+        });
+    }
+
+    getNotes();
+
+    $scope.onNoteSelect = function(id) {
+        $scope.selectedNote = {...$scope.notes.find((note) => note.id == id)}
+        $scope.isEditCreateView = true;
+    }
+
+    $scope.newNoteView = function(id){
+        $scope.selectedNote = { name: '', text: ''};
         $scope.isEditCreateView = true;
     };
 
-    $scope.deleteNote = function (i) {
-      var r = confirm("Are you sure you want to delete this note?");
-      if (r == true){
-        //TODO delete the note
-      }
-    };
+    $scope.onNoteSave = async function(noteId) {
+        $scope.isNoteUpdating = true;
+        if(noteId) {
 
-    $scope.viewNote = function(){
-        //TODO
+            const { text, name } = $scope.selectedNote;
+            NoteService.updateNote({id: noteId, name, text}).then(res => {
+                getNotes();
+                $scope.isNoteUpdating = false;
+                $scope.selectedNote = null;
+                $scope.isEditCreateView = false;
+                $scope.$apply();
+            })
+        } else {
+            NoteService.createNote(user.id, $scope.selectedNote).then(res => {
+                getNotes()
+                $scope.isNoteUpdating = false;
+                $scope.selectedNote = null;
+                $scope.isEditCreateView = false;
+                $scope.$apply();
+                
+            }).catch(err => {
+                $scope.isNoteUpdating = false;
+                $scope.selectedNote = null;
+                $scope.isEditCreateView = false;
+                $scope.$apply();
+            });
+        }
     }
+
+    $scope.onNoteCancel = function() {
+        $scope.selectedNote = null;
+        $scope.isEditCreateView = false;
+    } 
+
+    $scope.onLogout = function() {
+        AuthService.logout();
+    }
+
   });
 
 })();

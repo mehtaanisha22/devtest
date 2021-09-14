@@ -5,9 +5,9 @@ html {
 }
 
 body {
-    margin : 0;
-    min-height: 100%
-    background-color : #f7f7f7;
+    margin: 0;
+    min-height: 100%;
+    background-color: #f7f7f7;
 }
 
 .header {
@@ -16,8 +16,14 @@ body {
     color: white;
 }
 
+/* Login */
+.login-box {
+    max-width:  90%;
+    width: 500px;
+}
+
 .notes-view {
-    min-height: 500px;
+    height: 100%;
     position: relative;
     display: flex;
 }
@@ -33,6 +39,7 @@ body {
 }
 
 
+
 /* Note panels */
 .notes-view .note-panel md-input-container {
     display: block;
@@ -44,11 +51,30 @@ body {
 
 
 /* Notes list panels */
+.notes-view .note-list-header {
+    display: flex;
+    justify-content: space-between;
+}
+.list-item {
+    width: 100%;
+}
+.note-text {
+    width: 100%;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+.note-view .truncate {
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    width: 100px;
+}
 .notes-view .notes-panel ul.notes-list {
     list-style: none;
     padding: 0;
     max-height: 400px;
-    overflow: scroll;
+    overflow-y: auto;
 }
 .notes-view .notes-panel .notes-list li {
     list-style: none;

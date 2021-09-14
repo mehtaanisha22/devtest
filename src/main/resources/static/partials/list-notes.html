@@ -1,31 +1,28 @@
-<h4>Available notes</h4>
-
-<ul class="notes-list">
-    <li>
-        <p class="note-summary">This is a note</p>
-        <p class="note-timedate"><i>12/11/39</i></p>
-    </li>
-    <li>
-        <p class="note-summary">This is a note</p>
-        <p class="note-timedate"><i>12/11/39</i></p>
-    </li>
-    <li>
-        <p class="note-summary">This is a note</p>
-        <p class="note-timedate"><i>12/11/39</i></p>
-    </li>
-    <li>
-        <p class="note-summary">This is a note</p>
-        <p class="note-timedate"><i>12/11/39</i></p>
-    </li>
-    <li>
-        <p class="note-summary">This is a note</p>
-        <p class="note-timedate"><i>12/11/39</i></p>
-    </li>
-    <li>
-        <p class="note-summary">This is a note</p>
-        <p class="note-timedate"><i>12/11/39</i></p>
-    </li>
-</ul>
-<md-button style="float:right" ng-click="newNoteView()">
-    New Note
-</md-button>
+<div class="note-list-header">
+  <h4>Available notes</h4>
+  <div>
+    <md-button class="md-raised md-primary" ng-click="newNoteView()">
+      New Note
+    </md-button>
+  </div>
+</div>
+<md-progress-linear
+  md-mode="indeterminate"
+  ng-if="isFetching"
+></md-progress-linear>
+<md-list>
+  <md-list-item
+    class="md-3-line"
+    ng-repeat="note in notes"
+    ng-click="onNoteSelect(note.id)"
+  >
+    <div class="md-list-item-text list-item">
+      <h3 class="note-summary md-list-item-text" md-truncate>{{note.name}}</h3>
+      <p class="note-text">
+        <i>{{note.text}}</i>
+      </p>
+      <small class="note-timedate"><i>Created at: {{note.createdAt}}</i></small>
+    </div>
+    <md-divider></md-divider>
+  </md-list-item>
+</md-list>
