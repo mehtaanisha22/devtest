@@ -1,12 +1,22 @@
 package com.thevirtugroup.postitnote.model;
 
-import java.util.Date;
-
 public class Note {
     private Long id;
     private String name;
     private String text;
-    private Date createdAt;
+    private String createdAt;
+    private Long userId;
+
+    public Note() {
+    }
+
+    public Note(Long id, String name, String text, String createdAt, Long userId) {
+        this.id = id;
+        this.name = name;
+        this.text = text;
+        this.createdAt = createdAt;
+        this.userId = userId;
+    }
 
     public Long getId() {
         return id;
@@ -32,11 +42,26 @@ public class Note {
         this.text = text;
     }
 
-    public Date getCreatedAt() {
+    public String getCreatedAt() {
         return createdAt;
     }
 
-    public void setCreatedAt(Date createdAt) {
+    public void setCreatedAt(String createdAt) {
         this.createdAt = createdAt;
+    }
+
+    public Long getUserId() {
+        return userId;
+    }
+
+    public void setUserId(Long userId) {
+        this.userId = userId;
+    }
+
+    @Override
+    public String toString() {
+        return "Note{" +
+                "id=" + id +
+                '}';
     }
 }

@@ -3,6 +3,7 @@ package com.thevirtugroup.postitnote;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.thevirtugroup.postitnote.config.MvcConfig;
 import com.thevirtugroup.postitnote.config.WebSecurityConfig;
+import org.modelmapper.ModelMapper;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
@@ -25,6 +26,11 @@ public class Application extends WebMvcConfigurerAdapter {
         System.setProperty("spring.devtools.restart.enabled", "true");
 
         SpringApplication.run(Application.class, args);
+    }
+
+    @Bean
+    public ModelMapper modelMapper() {
+        return new ModelMapper();
     }
 
     @Bean
